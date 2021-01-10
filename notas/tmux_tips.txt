@@ -1,0 +1,36 @@
+C mean Ctrl, comands are C-b + key
+C-b ? > Shows all commands 
+
+Split terminal
+C-b + % > Split terminal to right
+C-b + " > Split terminal to bottom
+C-b + arrow_keys > Navigates through terminals splits
+C-d or exit > Close a teminal split
+
+Windows
+C-b + c > Creates a new window (workspace)
+C-b + p > Switch to the previous window
+C-b + n > Switch to the next window
+C-b + <number> > Switch to window indicated on the status bar
+C-b , > rename the current window
+
+
+Sessions
+tmux new -s <name> > Creates a new session with a name
+tmux rename-session -t <number> <name> > Rename a session
+C-b d or C-b D> Detach current session (still on the background)
+tmux ls > show the working sessions
+tmux attach -t <number> > Attach a session
+tmux kill-session -t <number> > kill a session
+
+Others
+C-b z > make a split goes full screen and vice-versa
+C-b C <arrow_keys> > Resize a split
+
+
+
+
+
+
+
+

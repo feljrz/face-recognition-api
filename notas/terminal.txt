@@ -1,0 +1,22 @@
+mv: serve para mover arquivos e renomea-los; mv origem destino.
+	
+cp: copia arquivos; cp origem destino.
+
+rm: remove arquivos, quando com -r recursivamente, podendo assim apagar também diretórios
+
+chmod: altera as permissões dos arquivos; chmod usuário grupo todos; chmod 777 nome_arquivo
+permssões: Permissão de leitura r = 4, permissão de escrita w = 2, permissão de execução x = 1
+Para listar permissões ls -lh 
+
+chown: modifica o usuário do arquivo; sudo chown felipe:felipe nome_do_arquivo
+
+htop: exibe processos sendo executados
+
+kill: fecha programa; kill -9 numero do processo em execução
+
+vi: editor do terminal; vi arquivo.txt; dentro i usa pra editar, esc + :wq salvar e sair 
+
+Criar comando shell
+
+ 
+	
