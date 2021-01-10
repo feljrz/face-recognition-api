@@ -168,6 +168,7 @@ df['Face Encoding'] = face_encoding
 # Detect and remove images that had more than one face
 
 df = df[df.apply(lambda x: len(x['Face Location']) == 1, axis=1)]
+df.to_csv('1000_images_1_face.csv')
 
 
 #%%
