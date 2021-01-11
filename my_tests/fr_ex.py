@@ -119,11 +119,11 @@ def predict(image, model_path=None, verbose=False):
    
     return y_pred
 
-def save_model(model, path):
+def save_binary(model, path):
     with open(path, 'wb') as f:
         pickle.dump(model, f)
 
-def load_model(path):
+def load_binary(path):
     with open(path, 'rb') as f:
         model = pickle.load(f)
     return model
@@ -139,16 +139,14 @@ def unpaking_array(*args):
 model_save_path = "./knn_model.clf"
 train_dir= "archive/lfw-deepfunneled"
 
-df = read_dir(train_dir, retrieve_one=False)
-print("Fim Leitura")
+df = read_dir(train_dir, retrieve_one_image=False)
 df['Image'] = read_image(df['Path'])
+print("Fim Leitura")
 
 #%%
 # Catch only users that had more than 10 images
 df = df.groupby(df['Name']).filter(lambda x: len(x) > 10)
 df = df.iloc[:1000, :]
-
-
 
 #%%
 # Catch the face locations
@@ -169,7 +167,12 @@ df['Face Encoding'] = face_encoding
 # Detect and remove images that had more than one face
 
 df = df[df.apply(lambda x: len(x['Face Location']) == 1, axis=1)]
-df.to_csv('1000_images_1_face.csv')
+# df.to_csv('1000_images_1_face.csv') # Substituir pelo pickle para manter o tipo de dados
+save_binary(df, 'df_saved')
+
+#%%
+#Reading Dataframe
+df = pd.read_csv("df_saved")
 
 
 #%%
