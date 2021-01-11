@@ -4,6 +4,7 @@
 Created on Tue Dec 29 07:53:55 2020
 @author: felipe
 """
+#https://stackoverflow.com/questions/30988033/sending-live-video-frame-over-network-in-python-opencv
 
 import face_recognition as fr
 import numpy as np
@@ -62,9 +63,9 @@ def plotSample(images, labels):
    
 #Lmebrar que esta recebe a predição com distância = True
 #Errado
-def get_labels(labels, y_pred):
+def get_labels(labels, knn_pred):
    names = []
-   index_pred = [i for i in y_pred[1][0]]
+   index_pred = [i for i in knn_pred[1][0]]
    for i in index_pred:
        names.append(labels[i])
    return names
@@ -205,28 +206,23 @@ model = train(X_train, y_train, model_save_path)
 
 #Pode ser substituido por cnn// Realizar encoding do frame
 uk_face_frame = np.array(X_test[200]).reshape(1, -1)
-closest_neighbor = model.kneighbors(uk_face_frame)
+closest_neighbors = model.kneighbors(uk_face_frame, n_neighbors=5)
 
 y_pred = model.predict(uk_face_frame)
 
 
 #%%
-names = []
-index_pred = [i for i in closest_neighbor[1][0]]
-for i in index_pred:
-    names.append(y_train[i])
-    print(y_train[i])
+candidate_names = get_labels(y_train,  closest_neighbors)
+#Select distinct names
+candidate_names = list(set(candidate_names))
 
-
-
-
-
+df_sub = df[df['Name'].isin(candidate_names)]
 
 
 
 #%%
-#Otimizar com KNN
-# X_train_cp = [x[0] for x in X_test] #Otimizar
+#build face
+
 face_distances = fr.face_distance(np.array(X_train), uk_face_frame)
 best_match_index = np.argmin(face_distances)
 
