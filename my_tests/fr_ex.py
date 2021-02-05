@@ -15,9 +15,10 @@ import pandas as pd
 import sklearn
 import math
 import pickle #Estudar sobre
+from flask import Flask, render_template, Response
 
 
-
+#%%
 
 def resizeImage(image, **kwargs):
     if 'scale' in kwargs.keys():
@@ -99,18 +100,18 @@ def read_image(path):
     return images
 
 
-def train(X_train, y_train, model_save_path=None, threads=-1):
+def knn_train(X_train, y_train, model_save_path=None, threads=-1):
     from sklearn.neighbors import KNeighborsClassifier
-    n_neighbors = int(math.sqrt(len(X_train)))
+    n_neighbors = int(math.sqrt(len(X_train))) #Sera susbtituído pelo elbow method
     
     model = KNeighborsClassifier(n_neighbors= n_neighbors, weights='distance', algorithm='auto', p=2, metric='minkowski', n_jobs = threads)
     model.fit(X_train, y_train)
     if model_save_path:
-        save_model(model, model_save_path)
+        save_binary(model, model_save_path)
     
     return model
 
-def predict(image, model_path=None, verbose=False):
+def knn_predict_(image, model_path=None, verbose=False):
     if model_path:
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
@@ -130,49 +131,66 @@ def load_binary(path):
 
 def unpaking_array(*args):
     new_list = list
+    
+    
+def first_train(df):
+    df["Face Location"] = df["Image"].apply(lambda x: fr.face_locations(x, 2, model="hog"))
+    df["Face Encoding"] = df.apply(lambda x: fr.face_encodings(x["Image"], x["Face Location"]), axis=1)
+    model = knn_train([x[0] for x in df['Face Encoding']], df['Name'].values, model_save_path)
+    
+    return model
+
+    
 
 
-
-
-#%%
 # Realizando leitura do dataset
 model_save_path = "./knn_model.clf"
 train_dir= "archive/lfw-deepfunneled"
 
-df = read_dir(train_dir, retrieve_one_image=False)
+#%%
+df = read_dir(train_dir, retrieve_one_image=True)
 df['Image'] = read_image(df['Path'])
 print("Fim Leitura")
 
 #%%
 # Catch only users that had more than 10 images
-df = df.groupby(df['Name']).filter(lambda x: len(x) > 10)
-df = df.iloc[:1000, :]
+# df = df.groupby(df['Name']).filter(lambda x: len(x) > 10)
+df = df.iloc[:1500, :]
+
+#%%
+#Testando map do pandas apply
+
+df = first_train(df)
+
+
 
 #%%
 # Catch the face locations
-# We can increse number of itterations to increse precision
-face_locations = []
-face_encoding = []
-for im in df['Image'].values:
-    fl = fr.face_locations(im, 2, 'hog')
-    face_encoding.append(fr.face_encodings(im, fl))
-    face_locations.append(fl)
-print("Fim face location")
+# We can increase number of itterations to increse precision
+# face_locations = []
+# face_encoding = []
+# for im in df['Image'].values:
+#     fl = fr.face_locations(im, 2, 'hog')
+#     face_encoding.append(fr.face_encodings(im, fl))
+#     face_locations.append(fl)
+# print("Fim face location")
 
-df['Face Location'] = face_locations
-df['Face Encoding'] = face_encoding
+# df['Face Location'] = face_locations
+# df['Face Encoding'] = face_encoding
 #%%
 
 # SOMENTE EM TESTE
 # Detect and remove images that had more than one face
 
-df = df[df.apply(lambda x: len(x['Face Location']) == 1, axis=1)]
+# df = df[df.apply(lambda x: len(x['Face Location']) == 1, axis=1)]
 # df.to_csv('1000_images_1_face.csv') # Substituir pelo pickle para manter o tipo de dados
-save_binary(df, 'df_saved')
+save_binary(df, 'df_with_me')
 
 #%%
 #Reading Dataframe
-df = pd.read_csv("df_saved")
+#For tests you can start here
+df = load_binary("bkp/df_with_me")
+# model = load_binary(model_save_path)
 
 
 #%%
@@ -187,9 +205,14 @@ df = pd.read_csv("df_saved")
 # X = .copy()
 # y = list(df['Name'].copy())
 
+# from sklearn.model_selection import train_test_split
+# X_train, X_test, y_train, y_test = train_test_split([x[0] for x in df['Face Encoding'].values], list(df['Name'].values), test_size= 0.25, random_state=42)
 
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split([x[0] for x in df['Face Encoding'].values], list(df['Name'].values), test_size= 0.25, random_state=42)
+############## UTILIZAR ESTE ########################
+
+# from sklearn.model_selection import train_test_split
+# df_train, df_test = train_test_split(df, test_size= 0.25, random_state=42)
+
 
 #%%
 
@@ -202,51 +225,124 @@ X_train, X_test, y_train, y_test = train_test_split([x[0] for x in df['Face Enco
 # model.fit(X_train, y_train)
 
 # save_model(model, model_save_path)
+# Lembre que df_train será substituído por df
 
-model = train(X_train, y_train, model_save_path)
+model = knn_train([x[0] for x in np.array(df['Face Encoding'])], df['Name'].values, model_save_path)
+
 #%%
 #Predict
+app = Flask(__name__)
+cap = cv2.VideoCapture('../../../Video/faces.mp4')
+while(cap.isOpened()):
+    ret, frame = cap.read()
+    # ukn_face_loc = fr.face_locations(frame) #return top right bottom left
+    ukn_face_encode = fr.face_encodings(frame)
+    
+    # person_pred = model.predict(np.array(ukn_face_encode).reshape(-1, 1))
+    
+    # cv2.rectangle(frame, (ukn_face_loc[0], ukn_face_loc[3]),
+    #               (ukn_face_loc[2], ukn_face_loc[1]), (0, 255, 0), 2)
+    
+    # frame = cv2.putText(frame, person_pred, ((ukn_face_loc[2]/2 + 10), (ukn_face_loc[2]/2 + 10)) , cv2.FONT_HERSHEY_SIMPLEX 
+    #                     , 1, (0, 255, 0), 2, cv2.LINE_AA)
+        
+    cv2.imshow('Video Frame', frame)
+    
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+    
+cap.release()
+cv2.destroyAllWindows()
+
+
+#%%
+#Send to Browser
+
+
+temp = []
+for pos, x in enumerate(df["Face Encoding"]):
+    if len(x) > 1:
+        for j in x:
+            temp.append(j)
+    else:
+        temp.append(x)
+    
+    
+    
+  
+
+
+
+
+
+    
+#%%
+#Teste on Machine
+
+# webcam = cv2.VideoCapture(0)
+# while True:
+#     ret, frame = webcam.read()
+#     if ret == True:
+#         small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+        
+        
+#         cv2.imshow("Frame", small_frame)
+        
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+#     else:
+#         break
+
+# webcam.release()
+# cv2.destroyAllWindows()
+
+
+
+
+
+
+
+#%%
+
 
 #Pode ser substituido por cnn// Realizar encoding do frame
-uk_face_frame = np.array(X_test[200]).reshape(1, -1)
-closest_neighbors = model.kneighbors(uk_face_frame, n_neighbors=5)
+unk_face_frame = np.array(df['Face Encoding'].iloc[200]).reshape(1, -1)
+closest_neighbors = model.kneighbors(unk_face_frame, n_neighbors=5)
 
-y_pred = model.predict(uk_face_frame)
+y_pred = model.predict(unk_face_frame)
 
 
 #%%
-candidate_names = get_labels(y_train,  closest_neighbors)
+candidate_names = get_labels(df['Name'].values,  closest_neighbors)
 #Select distinct names
-candidate_names = list(set(candidate_names))
+candidate_names = list(set(candidate_names)) 
 
-df_sub = df[df['Name'].isin(candidate_names)]
+df_candidates = df[df['Name'].isin(candidate_names)] # Lembre que isto só é possível pois Boolean é filho uma extensão do tipo int
+
+#%%
+#Check the best match for candidates
+
+face_distances = fr.face_distance(np.array([x[0] for x in df_candidates['Face Encoding'].values]), unk_face_frame)
+inconsistent_image_count = sum(x > 0.6 for x in face_distances)
 
 
 
 #%%
-#build face
-
-face_distances = fr.face_distance(np.array(X_train), uk_face_frame)
-best_match_index = np.argmin(face_distances)
-
-
-
-#%%
-
 #Segunda verificação
-# candidate_label = y_test[best_match_index]
-candidate_label = y_test[1]
-candidate_df = df[df['Name'] == candidate_label]
-
-face_distances_verify = fr.face_distance(np.array([x[0] for x in candidate_df['Face Encoding'].values]), uk_face_frame)
-inconsistent_image_count = sum(x > 0.6 for x in face_distances_verify)
+#Selecionando o index no df total
 
 if(inconsistent_image_count < 2):
-    name = ' '.join(candidate_label.split('_'))
-    print(f"Bem Vindo: {name}")
-    
+    best_match_index = np.argmin(face_distances)
+    candidate_index = df_candidates.index[best_match_index]
+    person_df = df[df.index == candidate_index]
+    name = ' '.join(person_df['Name'].iloc[0].split('_'))
+    print(f'Bem vindo {name}')
+
 else:
-    print("Você ainda não foi cadastrado")
+    print("Você ainda não está cadastrado")
+    
+
 
 #%%
 
