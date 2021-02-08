@@ -1,9 +1,11 @@
-from flask import Flask, Response, render_template, request
+from flask import Flask, Response, render_template, request, make_response
 import queue, threading, time
+import json
 import numpy as np
 import face_recognition as fr
 import matplotlib.pyplot as plt
-import cv2 
+import cv2
+import pandas as pd
 
 
 class VideoCapture():
@@ -37,7 +39,7 @@ def cam_gen():
     capture = VideoCapture(0)
     while(True):
         im = capture.read()
-        small_frame = cv2.resize(im, (0, 0), fx=0.5, fy=0.5)
+        small_frame = cv2.resize(im, (0, 0), fx=0.7, fy=0.7)
         face_location, face_encoding = decode(small_frame)
         if len(face_location) == 1:
             try:
@@ -64,16 +66,50 @@ def video_feed():
     return Response(cam_gen(),
              mimetype='multipart/x-mixed-replace; boundary=frame')
 
-def screenshot(loc_save_screenshot):
-    capture = VideoCapture(0)
-    
-    while(True):
-        frame = capture.read()
-        time.sleep(2)
-        cv2.imwrite(loc_save_screenshot, frame)
-        break
+@app.route('/api/v1/screenshot', methods=['POST'])
+def screenshot():
+    loc_photo_screenshot = "capturas/frame1.jpg" #Lembrar de susbstituir por NomeUsuario%NumeroFoto
+    loc_csv_screenshot = "capturas/SCREENSHOT.csv"
+    if request.method == 'POST':
+        save_type = request.args.get("type")
+        capture = VideoCapture(0)
+        while(True):
+            frame = capture.read()
+            time.sleep(0)
+            break
+        capture.cap.release()
+
+        #não é seguro
+        #lento
+        if save_type == "image":
+            try:
+                saved = cv2.imwrite(loc_photo_screenshot, frame)
+                df = pd.DataFrame({"Frame": [frame]})
+                return make_response(json.dumps(df.to_json(orient='records')))
+                # return make_response(json.dumps({"Saved": saved}))
+
+            except OSError as err:
+                return make_response(json.dumps({"Error": err}))
+
+
+        face_location, face_encoding = decode(frame)
+        if face_location is not None:
+            try:
+                mapped = {"Face Location": face_location, "Face Encoding": face_encoding}    
+                if save_type == "both":
+                    df = pd.DataFrame(mapped)
+                    saved = cv2.imwrite(loc_photo_screenshot, frame)
+                    df.to_csv(loc_csv_screenshot, index=False)
+                    return make_response(df.to_json(orient='records')) #Adicionar photo?
+                else:
+                    df = pd.DataFrame(mapped)
+                    df.to_csv(loc_csv_screenshot, index=False)
+                    return make_response(df.to_json(orient='records'))
+
+            except OSError as err:
+                return make_response(json.dumps({"Error": err}))
         
-    capture.cap.release()
+    
 
 
 def decode(frame = None, im_loc=None):
@@ -86,18 +122,19 @@ def decode(frame = None, im_loc=None):
     return (face_location, face_encoding)
 
 
-def draw_rectangle(frame, face_location, name):
-    face_location = list(face_location[0])
-    face_location_big = list(map(lambda x: int(x*1.05), face_location))
+def draw_rectangle(frame, faces_locations, name):
+    for face_location in faces_locations:
+        face_location = list(face_location)
+        face_location_big = list(map(lambda x: int(x*1.05), face_location))
 
 
-    top, right, bottom, left = face_location_big
-    print(f'{top}+" "+{right}+" "+{bottom}+" "+{left}')
-    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-    cv2.rectangle(frame, (left, bottom - 20), (right, bottom), (0, 0, 255), cv2.FILLED)
-    font = cv2.FONT_HERSHEY_DUPLEX
-    cv2.putText(frame, name, (left, bottom), font, 0.7, (255, 255, 255), 1)
-    time.sleep(0)
+        top, right, bottom, left = face_location_big
+        print(f'{top}+" "+{right}+" "+{bottom}+" "+{left}')
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        cv2.rectangle(frame, (left, bottom - 20), (right, bottom), (0, 0, 255), cv2.FILLED)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, name, (left, bottom), font, 0.7, (255, 255, 255), 1)
+        time.sleep(0)
     
 
     
