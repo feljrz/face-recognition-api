@@ -16,7 +16,7 @@ import sklearn
 import math
 import pickle #Estudar sobre
 from flask import Flask, render_template, Response
-
+print("Import sem erros")
 
 #%%
 

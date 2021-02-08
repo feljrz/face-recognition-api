@@ -2,6 +2,9 @@ my_tests/archive/
 Fr/
 my_tests/df_saved_video
 my_tests/df_saved
+.vscode/
+archive.zip
+archive/
 
 my_tests/df_saved.rar
 my_tests/bkp/df_with_me
