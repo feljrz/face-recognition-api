@@ -6,6 +6,7 @@ import face_recognition as fr
 import matplotlib.pyplot as plt
 import cv2
 import pandas as pd
+import fr_api_wrapper as fr_wp
 
 
 class VideoCapture():
@@ -16,7 +17,7 @@ class VideoCapture():
         self.cap = cv2.VideoCapture(self.webcam_name)
         cap_thread = threading.Thread(target=self.buffer)
         cap_thread.deamon = True
-        cap_thread.start()
+        cap_thread.start() # não pode iniciar automáticamente, será por evento
 
     def buffer(self):
         self.lock.acquire()
@@ -35,6 +36,7 @@ class VideoCapture():
     def read(self):
         return self.q.get()
     
+#Deve receber o nome e por padrao NONE
 def cam_gen():
     capture = VideoCapture(0)
     while(True):
@@ -117,8 +119,6 @@ def decode(frame = None, im_loc=None):
         frame = cv2.imread(im_loc)
     face_location = fr.face_locations(frame)
     face_encoding = fr.face_encodings(frame, face_location)
-    # print(face_location)
-    # print(face_encoding)
     return (face_location, face_encoding)
 
 
@@ -137,11 +137,7 @@ def draw_rectangle(frame, faces_locations, name):
         time.sleep(0)
     
 
-    
-
-
-
-
+def recognize()
 
 if __name__ == "__main__":
     # threading.Thread(target=app.run(debug=True)).start()
@@ -149,6 +145,23 @@ if __name__ == "__main__":
     loc_save_screenshot = "capturas/frame.jpg"
     # screenshot(loc_save_screenshot)
     # decode(loc_save_screenshot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
