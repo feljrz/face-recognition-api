@@ -37,7 +37,7 @@ class VideoCapture():
         return self.q.get()
     
 #Deve receber o nome e por padrao NONE
-def cam_gen():
+def cam_gen(name = None):
     capture = VideoCapture(0)
     while(True):
         im = capture.read()
@@ -137,10 +137,13 @@ def draw_rectangle(frame, faces_locations, name):
         time.sleep(0)
     
 
-def recognize()
+#Ativado por evento (click)
+def recognize(face_encoding, model):
+    
+    cam_gen()
+
 
 if __name__ == "__main__":
-    # threading.Thread(target=app.run(debug=True)).start()
     app.run(debug=True)
     loc_save_screenshot = "capturas/frame.jpg"
     # screenshot(loc_save_screenshot)
