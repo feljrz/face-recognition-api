@@ -9,6 +9,37 @@ import pandas as pd
 import fr_api_wrapper as fr_wp
 
 
+def remove_background_faces(faces_location, faces_encoding):
+    # print(faces_location)
+    n_faces = len(faces_location)
+    result = zip(faces_location, faces_encoding)
+    for face_location, face_encoding in result:
+        if n_faces > 1:
+            list_loc = list(face_location)
+            list_enc = list(face_encoding)
+            print(list_loc)
+            # print(list_enc)
+
+            # mydict = dict(zip(list_loc, list_enc))
+            # for k, v in mydict.items():
+            #     print(k)
+            #     print(v)
+
+    
+
+            sorted_dict = dict()
+
+        # else:
+        #     print(f"A: {fac}")
+            # for key in sorted(mydict, key=lambda x: sum(x), reverse=True):
+            #     print(f"{key: mydict[key]}")
+            #     sorted_dict.update({key: mydict[key]})
+
+    # first_item = next(iter(sorted_dict.items()))
+    # first_face_location, first_face_encoding = sorted_dict.items()
+    # return first_face_location, first_face_encoding
+
+
 class VideoCapture():
     def __init__(self, webcam_name):
         self.lock = threading.Lock()
@@ -36,13 +67,20 @@ class VideoCapture():
     def read(self):
         return self.q.get()
     
-#Deve receber o nome e por padrao NONE
+# #Deve receber o nome e por padrao NONE
+# CERTO
 def cam_gen(name = None):
     capture = VideoCapture(0)
     while(True):
         im = capture.read()
         small_frame = cv2.resize(im, (0, 0), fx=0.7, fy=0.7)
         face_location, face_encoding = decode(small_frame)
+        # print(f"Before: {face_location}")
+
+        # print(f"After: {face_location_1}")
+        remove_background_faces(list(face_location), list(face_encoding))
+
+
         if len(face_location) == 1:
             try:
                 draw_thread = threading.Thread(target=draw_rectangle)
@@ -54,6 +92,7 @@ def cam_gen(name = None):
         ret_enc, buffer = cv2.imencode('.jpg', small_frame)
         encode_frame = buffer.tobytes()
         yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + encode_frame + b'\r\n')
+
 
 app = Flask(__name__)
 @app.route('/')
@@ -129,7 +168,7 @@ def draw_rectangle(frame, faces_locations, name):
 
 
         top, right, bottom, left = face_location_big
-        print(f'{top}+" "+{right}+" "+{bottom}+" "+{left}')
+        # print(f'{top}+" "+{right}+" "+{bottom}+" "+{left}')
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
         cv2.rectangle(frame, (left, bottom - 20), (right, bottom), (0, 0, 255), cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
@@ -137,10 +176,10 @@ def draw_rectangle(frame, faces_locations, name):
         time.sleep(0)
     
 
-#Ativado por evento (click)
-def recognize(face_encoding, model):
+# #Ativado por evento (click)
+# def recognize(face_encoding, model):
     
-    cam_gen()
+#     cam_gen()
 
 
 if __name__ == "__main__":
@@ -148,6 +187,7 @@ if __name__ == "__main__":
     loc_save_screenshot = "capturas/frame.jpg"
     # screenshot(loc_save_screenshot)
     # decode(loc_save_screenshot)
+
 
 
 
