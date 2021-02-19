@@ -4,7 +4,6 @@ my_tests/df_saved_video
 my_tests/df_saved
 .vscode/
 archive.zip
-archive/
 
-bkp/dataset_example.pkl
+my_tests/bkp/dataset_example.pkl
 

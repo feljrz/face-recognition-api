@@ -1,43 +1,44 @@
 from flask import Flask, Response, render_template, request, make_response
 import queue, threading, time
+import math
 import json
 import numpy as np
 import face_recognition as fr
 import matplotlib.pyplot as plt
 import cv2
 import pandas as pd
-import fr_api_wrapper as fr_wp
+import api_wrapper_fr as fr_wp
+
+def closest_face(face):
+    top, right, bottom, left = face
+    distance = math.sqrt((top-bottom)**2 + (right - left)**2)
+    # print(f'Distance {distance}')
+    return distance
 
 
 def remove_background_faces(faces_location, faces_encoding):
-    # print(faces_location)
     n_faces = len(faces_location)
     result = zip(faces_location, faces_encoding)
-    for face_location, face_encoding in result:
-        if n_faces > 1:
-            list_loc = list(face_location)
-            list_enc = list(face_encoding)
-            print(list_loc)
-            # print(list_enc)
+    faces_dict = dict(result)
+    count = 1
+    sorted_faces = dict()
+    if n_faces > 1:
+        #Ordenando o dicionário com as faces por proximidade
+        for face_location in sorted(faces_dict, key= lambda x: closest(x), reverse=True):
+            print(f'LOCATION: {face_location} FACE:{count}')
+            sorted_faces.update({face_location: faces_dict[face_location]})
+            count +=1
+        closest_face = next(iter(sorted_faces.items()))
+        cl_face_loc, cl_face_encode = closest_face
+        return [cl_face_loc], [cl_face_encode]
+        
 
-            # mydict = dict(zip(list_loc, list_enc))
-            # for k, v in mydict.items():
-            #     print(k)
-            #     print(v)
-
+    elif n_faces == 1:
+        # print(f'My Return: {faces_location} FACE:{n_faces}')
+        closest(faces_location[0])
+        return faces_location, faces_encoding
     
-
-            sorted_dict = dict()
-
-        # else:
-        #     print(f"A: {fac}")
-            # for key in sorted(mydict, key=lambda x: sum(x), reverse=True):
-            #     print(f"{key: mydict[key]}")
-            #     sorted_dict.update({key: mydict[key]})
-
-    # first_item = next(iter(sorted_dict.items()))
-    # first_face_location, first_face_encoding = sorted_dict.items()
-    # return first_face_location, first_face_encoding
+            
 
 
 class VideoCapture():
@@ -75,10 +76,16 @@ def cam_gen(name = None):
         im = capture.read()
         small_frame = cv2.resize(im, (0, 0), fx=0.7, fy=0.7)
         face_location, face_encoding = decode(small_frame)
-        # print(f"Before: {face_location}")
+        print(f'BEFORE: {face_location}')
 
-        # print(f"After: {face_location_1}")
-        remove_background_faces(list(face_location), list(face_encoding))
+
+        if len(face_location) >= 1:
+            # rm_bk_faces = threading.Thread(target=remove_background_faces)
+            # rm_bk_faces._args = (face_location, face_encoding)
+            # rm_bk_faces.start()
+            face_location, face_encoding = remove_background_faces(face_location, face_encoding)
+            print(f'MY RETURN: {face_location}')
+            print("________________________________________")
 
 
         if len(face_location) == 1:
