@@ -7,38 +7,43 @@ import face_recognition as fr
 import matplotlib.pyplot as plt
 import cv2
 import pandas as pd
-import api_wrapper_fr as fr_wp
+import fr_api_wrapper as fr_api
 
-def closest_face(face):
+
+def face_size(face):
     top, right, bottom, left = face
     distance = math.sqrt((top-bottom)**2 + (right - left)**2)
-    # print(f'Distance {distance}')
+    # print(f"DISTANCE: {distance}")
     return distance
 
-
-def remove_background_faces(faces_location, faces_encoding):
-    n_faces = len(faces_location)
-    result = zip(faces_location, faces_encoding)
+"""Removing encoded faces on frames that has more than one face"""
+def remove_background_faces(raw_location, raw_encoding):
+    n_faces = len(raw_location)
+    result = zip(raw_location, raw_encoding)
     faces_dict = dict(result)
-    count = 1
     sorted_faces = dict()
-    if n_faces > 1:
-        #Ordenando o dicionário com as faces por proximidade
-        for face_location in sorted(faces_dict, key= lambda x: closest(x), reverse=True):
-            print(f'LOCATION: {face_location} FACE:{count}')
+
+    if n_faces == 1:
+        return raw_location, raw_encoding
+    else:
+        #Ordering a dict thought the proximity face
+        for face_location in sorted(faces_dict, key= lambda x: face_size(x), reverse=True):
             sorted_faces.update({face_location: faces_dict[face_location]})
-            count +=1
+
         closest_face = next(iter(sorted_faces.items()))
         cl_face_loc, cl_face_encode = closest_face
         return [cl_face_loc], [cl_face_encode]
-        
 
-    elif n_faces == 1:
-        # print(f'My Return: {faces_location} FACE:{n_faces}')
-        closest(faces_location[0])
-        return faces_location, faces_encoding
-    
-            
+def recognize(frame_encoded):
+    global model
+    neighbors = model.kneighbors(frame_encoded, n_neighbors = 6)
+    print(neighbors)
+
+    name = model.predict(frame_encoded)
+    fr_api.get_labels
+   
+    return name
+
 
 
 class VideoCapture():
@@ -67,6 +72,7 @@ class VideoCapture():
     
     def read(self):
         return self.q.get()
+
     
 # #Deve receber o nome e por padrao NONE
 # CERTO
@@ -74,30 +80,34 @@ def cam_gen(name = None):
     capture = VideoCapture(0)
     while(True):
         im = capture.read()
-        small_frame = cv2.resize(im, (0, 0), fx=0.7, fy=0.7)
+        small_frame = cv2.resize(im, (0, 0), fx=0.6, fy=0.6)
         face_location, face_encoding = decode(small_frame)
-        print(f'BEFORE: {face_location}')
+     
 
 
         if len(face_location) >= 1:
-            # rm_bk_faces = threading.Thread(target=remove_background_faces)
-            # rm_bk_faces._args = (face_location, face_encoding)
-            # rm_bk_faces.start()
-            face_location, face_encoding = remove_background_faces(face_location, face_encoding)
-            print(f'MY RETURN: {face_location}')
-            print("________________________________________")
-
-
-        if len(face_location) == 1:
+            
+            #Will be used to verify veracity
+            is_real = True if face_size(face_location[0]) > 100 else False
+            full_name = True
+        
+            if len(face_location) > 1:
+                face_location, face_encoding = remove_background_faces(face_location, face_encoding)
+            
             try:
+                name = recognize(face_encoding)[0]
+                # print("INIT DRAW")
                 draw_thread = threading.Thread(target=draw_rectangle)
-                draw_thread._args = (small_frame, face_location, "Felipe")
+                draw_thread._args = (small_frame, face_location, name, is_real, full_name)
                 draw_thread.start()
+                draw_thread.join()
             except:
                 pass
-            # draw_rectangle(small_frame, "Felipe", face_location)
+            
         ret_enc, buffer = cv2.imencode('.jpg', small_frame)
         encode_frame = buffer.tobytes()
+        # print("END GEN")
+        # print("__________")
         yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + encode_frame + b'\r\n')
 
 
@@ -139,7 +149,6 @@ def screenshot():
             except OSError as err:
                 return make_response(json.dumps({"Error": err}))
 
-
         face_location, face_encoding = decode(frame)
         if face_location is not None:
             try:
@@ -168,19 +177,24 @@ def decode(frame = None, im_loc=None):
     return (face_location, face_encoding)
 
 
-def draw_rectangle(frame, faces_locations, name):
+def draw_rectangle(frame, faces_locations, name, alive, full_name=None):
     for face_location in faces_locations:
         face_location = list(face_location)
         face_location_big = list(map(lambda x: int(x*1.05), face_location))
 
+        show_name = ' '.join(name.split('_')) if full_name else name.split('_')[0]
+        color = (0, 200, 0) if alive else (0, 0, 255)
+
 
         top, right, bottom, left = face_location_big
         # print(f'{top}+" "+{right}+" "+{bottom}+" "+{left}')
-        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-        cv2.rectangle(frame, (left, bottom - 20), (right, bottom), (0, 0, 255), cv2.FILLED)
+        cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
+        cv2.rectangle(frame, (left, bottom - 20), (right, bottom), color, cv2.FILLED)
         font = cv2.FONT_HERSHEY_DUPLEX
-        cv2.putText(frame, name, (left, bottom), font, 0.7, (255, 255, 255), 1)
-        time.sleep(0)
+        cv2.putText(frame, show_name, (left, bottom), font, 0.7, (255, 255, 255), 1)
+        # print("END DRAW")
+
+        # time.sleep(0)
     
 
 # #Ativado por evento (click)
@@ -189,9 +203,18 @@ def draw_rectangle(frame, faces_locations, name):
 #     cam_gen()
 
 
+model_save_path = "./knn_model.clf"
+train_dir = "archive/lfw-deepfunneled"
+df_save_path = 'bkp/dataset_example.pkl'
+loc_save_screenshot = "capturas/frame.jpg"
+
+model = fr_api.load_binary(model_save_path)
+
 if __name__ == "__main__":
+
     app.run(debug=True)
-    loc_save_screenshot = "capturas/frame.jpg"
+
+
     # screenshot(loc_save_screenshot)
     # decode(loc_save_screenshot)
 

@@ -1,3 +1,6 @@
+#Testando o o que será colocado em threads_cam.py
+
+
 import face_recognition as fr
 import numpy as np
 import cv2
@@ -8,7 +11,7 @@ import sklearn
 import math
 import pickle #Estudar sobre
 from flask import Flask, render_template, Response
-print("Import sem erros")
+
 
 
 def resizeImage(image, **kwargs):
@@ -99,10 +102,11 @@ def knn_train(X_train, y_train, model_save_path=None, threads=-1):
     model.fit(X_train, y_train)
     if model_save_path:
         save_binary(model, model_save_path)
+    print("End of training")
     
     return model
 
-def knn_predict_(image, model_path=None, verbose=False):
+def knn_predict(image, model_path=None, verbose=False):
     if model_path:
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
@@ -111,42 +115,47 @@ def knn_predict_(image, model_path=None, verbose=False):
    
     return y_pred
 
-def save_binary(model, path):
+def save_binary(pkl_file, path):
     with open(path, 'wb') as f:
-        pickle.dump(model, f)
+        pickle.dump(pkl_file, f)
 
 def load_binary(path):
     with open(path, 'rb') as f:
-        model = pickle.load(f)
-    return model
+        pkl_file = pickle.load(f)
+    return pkl_file
 
-def unpaking_array(*args):
-    new_list = list
-    
-    
-def first_train(train_dir, model_save_path):
+  
+def first_train(train_dir, model_save_path=None, df_save_path=None):
     df = read_dir(train_dir, retrieve_one_image=True)
-    df = df.iloc[:1500, :] #Here because of the Dataset 
+    df = df.sort_values(["Name"]) #@@@ Here because of the Dataset @@@
+    df = df.iloc[:1500, :] #@@@ Here because of the Dataset @@@
     df['Image'] = read_image(df['Path'])
-    print(df.head(10))
-
+    
     df["Face Location"] = df["Image"].apply(lambda x: fr.face_locations(x, 2, model="hog"))
     df["Face Encoding"] = df.apply(lambda x: fr.face_encodings(x["Image"], x["Face Location"]), axis=1)
+    df = df[df.apply(lambda x: len(x['Face Encoding']) == 1, axis= 1)] #@@@@ Here because of the Dataset @@@
+    if df_save_path:
+        save_binary(df, df_save_path) 
     print(df.head(10))
 
-    # model = knn_train([x[0] for x in df['Face Encoding']], df['Name'].values, model_save_path)
-    model = [x for x in df['Face Encoding']]
+    #Encode array has to be a 'pure' array to sklearn train
+    # I won't find another way to do with thease piece of code maybe i am dumb
+    X_train = []
+    for elem in df['Face Encoding'].values:
+        X_train.append(elem[0]) 
+
+    model = knn_train(X_train, df['Name'].values, model_save_path)
+    print("End of first train")
     return model, df
 
-    
-
-
 # Realizando leitura do dataset
+# Lembrar de definir esta variáveis via linha de comnado
+model_save_path = "./knn_model.clf"
+train_dir = "archive/lfw-deepfunneled"
+df_save_path = 'bkp/dataset_example.pkl'
 
-if __name__ == '__main__':
-    model_save_path = "./knn_model.clf"
-    train_dir = "archive/lfw-deepfunneled"
-    model, df = first_train(train_dir, model_save_path)
+
+
 
 
 

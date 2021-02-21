@@ -126,7 +126,7 @@ def save_binary(model, path):
 
 def load_binary(path):
     with open(path, 'rb') as f:
-        model = pickle.load(f)
+         = pickle.load(f)
     return model
 
 def unpaking_array(*args):
@@ -304,7 +304,7 @@ for pos, x in enumerate(df["Face Encoding"]):
 
 
 #%%
-
+#Verificando veracidade
 
 #Pode ser substituido por cnn// Realizar encoding do frame
 unk_face_frame = np.array(df['Face Encoding'].iloc[200]).reshape(1, -1)
