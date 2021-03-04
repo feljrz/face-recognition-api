@@ -56,8 +56,8 @@ def plotSample(images, labels):
         plt.xlabel(labels[i])
     plt.show()
    
-#Lmebrar que esta recebe a predição com distância = True
 
+# MUST BE FIXED
 def get_label(frame, candidates, tolerance):
     global df
     name = None
@@ -68,28 +68,29 @@ def get_label(frame, candidates, tolerance):
         distances.append(np.linalg.norm(frame - encode[0]))
 
     count = len([dst for dst in distances if dst > tolerance])
+    closest_distance = np.amin(distances)
 
-    if count > 2:
+    print(closest_distance)
+    if count > 2 and closest_distance > tolerance:
         name = "Unknow"
-
-    # MUST BE FIXED
-    # else:
-        # index = np.argmin(distances)
-        # name = candidates_subset.iloc[index]['Name']
+  
+    index = np.argmin(distances)
+    guess_name = candidates_subset.iloc[index]['Name']
+    print(guess_name)
 
     return [name], count
 
-def read_dir(directory, for_one=False, retrieve_one_image=False):
+def read_dir(directory, for_one=False, n_images=4):
     path = []
     images = []
     data = []
     
     if not(for_one):
         for sub_folder in os.listdir(directory):
-            for filename in os.listdir(os.path.join(directory, sub_folder)):
+            for n_picture, filename in enumerate(os.listdir(os.path.join(directory, sub_folder))):
                 image_path = directory+'/'+sub_folder+'/'+filename
                 data.append({"Name": sub_folder, 'Path': image_path})
-                if retrieve_one_image:
+                if n_picture > n_images:
                     break
     else:
         for image in os.listdir(directory):
@@ -140,7 +141,7 @@ def load_binary(path):
 
   
 def first_train(train_dir, model_save_path=None, df_save_path=None):
-    df = read_dir(train_dir, retrieve_one_image=False)
+    df = read_dir(train_dir)
     df = df.sort_values(["Name"]) #@@@ Here because of the Dataset @@@
     df = df.iloc[:4500, :] #@@@ Here because of the Dataset @@@
     df['Image'] = read_image(df['Path'])

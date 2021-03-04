@@ -40,10 +40,11 @@ def recognize(frame_encoded):
 
     # ? IMPORTANT HERE (INITIALLY) I CONSIDER THAT EACH PERSON ON ENTIRE DATASET HAS MORE THAN ONE PICTURE
     # 0.6 Tolerance is just to use dataset faces
-    name, wrong_aws_count = fr_api.get_label(frame_encoded, neighbors[1], 0.58) 
+    # name, wrong_aws_count = fr_api.get_label(frame_encoded, neighbors[1], 0.5) 
+    # if name[0] == None:
+    #     name = model.predict(frame_encoded)
 
-    if name[0] == None:
-        name = model.predict(frame_encoded)
+    name = model.predict(frame_encoded)
    
     return name
 
@@ -77,8 +78,6 @@ class VideoCapture():
         return self.q.get()
 
     
-# #Deve receber o nome e por padrao NONE
-# CERTO
 def cam_gen(name = None):
     capture = VideoCapture(0)
     while(True):
@@ -86,17 +85,14 @@ def cam_gen(name = None):
         small_frame = cv2.resize(im, (0, 0), fx=0.6, fy=0.6)
         face_location, face_encoding = decode(small_frame)
      
-
-
         if len(face_location) >= 1:
             
             #Will be used to verify veracity
             is_real = True if face_size(face_location[0]) > 100 else False
-            full_name = False
+            full_name = True
         
             if len(face_location) > 1:
                 face_location, face_encoding = remove_background_faces(face_location, face_encoding)
-            
             
             try:
                 name = recognize(face_encoding)[0]
