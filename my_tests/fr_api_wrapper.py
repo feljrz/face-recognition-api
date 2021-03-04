@@ -57,13 +57,27 @@ def plotSample(images, labels):
     plt.show()
    
 #Lmebrar que esta recebe a predição com distância = True
-#Errado
-def get_labels(labels, knn_pred):
-    names = []
-    index_pred = [i for i in knn_pred[1][0]]
-    for i in index_pred:
-        names.append(labels[i])
-    return names
+
+def get_label(frame, candidates, tolerance):
+    global df
+    name = None
+
+    candidates_subset = df.iloc[candidates[0]]
+    distances = []
+    for encode in candidates_subset['Face Encoding']:
+        distances.append(np.linalg.norm(frame - encode[0]))
+
+    count = len([dst for dst in distances if dst > tolerance])
+
+    if count > 2:
+        name = "Unknow"
+
+    # MUST BE FIXED
+    # else:
+        # index = np.argmin(distances)
+        # name = candidates_subset.iloc[index]['Name']
+
+    return [name], count
 
 def read_dir(directory, for_one=False, retrieve_one_image=False):
     path = []
@@ -128,7 +142,7 @@ def load_binary(path):
 def first_train(train_dir, model_save_path=None, df_save_path=None):
     df = read_dir(train_dir, retrieve_one_image=False)
     df = df.sort_values(["Name"]) #@@@ Here because of the Dataset @@@
-    df = df.iloc[3000:4700, :] #@@@ Here because of the Dataset @@@
+    df = df.iloc[:4500, :] #@@@ Here because of the Dataset @@@
     df['Image'] = read_image(df['Path'])
     print(df.tail(15))
     print("End reading")
@@ -160,6 +174,8 @@ def first_train(train_dir, model_save_path=None, df_save_path=None):
 model_save_path = "./knn_model.clf"
 train_dir = "archive/lfw-deepfunneled"
 df_save_path = 'bkp/dataset_example.pkl'
+df = pd.read_pickle(df_save_path)  #Lembrar de definir o carregamento facultativo
+
 
 
 

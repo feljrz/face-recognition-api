@@ -36,13 +36,14 @@ def remove_background_faces(raw_location, raw_encoding):
 
 def recognize(frame_encoded):
     global model
-    neighbors = model.kneighbors(frame_encoded, n_neighbors = 6)
-    print(neighbors)
-    print("____________________________")
+    neighbors = model.kneighbors(frame_encoded, n_neighbors = 4)
 
+    # ? IMPORTANT HERE (INITIALLY) I CONSIDER THAT EACH PERSON ON ENTIRE DATASET HAS MORE THAN ONE PICTURE
+    # 0.6 Tolerance is just to use dataset faces
+    name, wrong_aws_count = fr_api.get_label(frame_encoded, neighbors[1], 0.58) 
 
-    name = model.predict(frame_encoded)
-    fr_api.get_labels()
+    if name[0] == None:
+        name = model.predict(frame_encoded)
    
     return name
 
@@ -221,81 +222,3 @@ if __name__ == "__main__":
         print("End of retrain")
 
     app.run(debug=True)
-
-
-    # screenshot(loc_save_screenshot)
-    # decode(loc_save_screenshot)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# while(True):
-#     time.sleep(0.0)
-#     frame = capture.read()
-#     cv2.imshow("frame", frame)
-#     if chr(cv2.waitKey(1)&255) == 'q':
-#         break
-
-
-
-
-
-
-# import cv2, queue, threading, time
-
-# # bufferless VideoCapture
-# class VideoCapture:
-
-#   def __init__(self, name):
-#     self.cap = cv2.VideoCapture(name)
-#     self.q = queue.Queue()
-#     t = threading.Thread(target=self._reader)
-#     t.daemon = True
-#     t.start()
-
-#   # read frames as soon as they are available, keeping only most recent one
-#   def _reader(self):
-#     while True:
-#       ret, frame = self.cap.read()
-#       if not ret:
-#         break
-#       if not self.q.empty():
-#         try:
-#           self.q.get_nowait()   # discard previous (unprocessed) frame
-#         except queue.Empty:
-#           pass
-#       self.q.put(frame)
-
-#   def read(self):
-#     return self.q.get()
-
-# cap = VideoCapture(0)
-# while True:
-#   time.sleep(.5)   # simulate time between events
-#   frame = cap.read()
-#   cv2.imshow("frame", frame)
-#   if chr(cv2.waitKey(1)&255) == 'q':
-#     break
