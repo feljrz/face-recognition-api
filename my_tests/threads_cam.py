@@ -38,9 +38,11 @@ def recognize(frame_encoded):
     global model
     neighbors = model.kneighbors(frame_encoded, n_neighbors = 6)
     print(neighbors)
+    print("____________________________")
+
 
     name = model.predict(frame_encoded)
-    fr_api.get_labels
+    fr_api.get_labels()
    
     return name
 
@@ -89,10 +91,11 @@ def cam_gen(name = None):
             
             #Will be used to verify veracity
             is_real = True if face_size(face_location[0]) > 100 else False
-            full_name = True
+            full_name = False
         
             if len(face_location) > 1:
                 face_location, face_encoding = remove_background_faces(face_location, face_encoding)
+            
             
             try:
                 name = recognize(face_encoding)[0]
@@ -211,6 +214,11 @@ loc_save_screenshot = "capturas/frame.jpg"
 model = fr_api.load_binary(model_save_path)
 
 if __name__ == "__main__":
+    retrain_model = False
+    if retrain_model:
+        print("Start retrain")
+        fr_api.first_train(train_dir, model_save_path, df_save_path)
+        print("End of retrain")
 
     app.run(debug=True)
 

@@ -37,11 +37,11 @@ def flat_images(images):
     #Flatten the images array
     n, m = images[0].shape
     k = len(images)
-    flat_images = np.zeros((n * m, k), dtype='uint8').T
+    flaten_images = np.zeros((n * m, k), dtype='uint8').T
    
     for i in range(k):
-        flat_images[i] = images[i].flatten()
-    return flat_images
+        flaten_images[i] = images[i].flatten()
+    return flaten_images
 
 
 def plotSample(images, labels):
@@ -59,11 +59,11 @@ def plotSample(images, labels):
 #Lmebrar que esta recebe a predição com distância = True
 #Errado
 def get_labels(labels, knn_pred):
-   names = []
-   index_pred = [i for i in knn_pred[1][0]]
-   for i in index_pred:
-       names.append(labels[i])
-   return names
+    names = []
+    index_pred = [i for i in knn_pred[1][0]]
+    for i in index_pred:
+        names.append(labels[i])
+    return names
 
 def read_dir(directory, for_one=False, retrieve_one_image=False):
     path = []
@@ -126,13 +126,20 @@ def load_binary(path):
 
   
 def first_train(train_dir, model_save_path=None, df_save_path=None):
-    df = read_dir(train_dir, retrieve_one_image=True)
+    df = read_dir(train_dir, retrieve_one_image=False)
     df = df.sort_values(["Name"]) #@@@ Here because of the Dataset @@@
-    df = df.iloc[:1500, :] #@@@ Here because of the Dataset @@@
+    df = df.iloc[3000:4700, :] #@@@ Here because of the Dataset @@@
     df['Image'] = read_image(df['Path'])
-    
+    print(df.tail(15))
+    print("End reading")
+
+    print("Start Location")
     df["Face Location"] = df["Image"].apply(lambda x: fr.face_locations(x, 2, model="hog"))
+    print("End Location")
+    
+    print("Start Encoding")
     df["Face Encoding"] = df.apply(lambda x: fr.face_encodings(x["Image"], x["Face Location"]), axis=1)
+    print("End Encoding")
     df = df[df.apply(lambda x: len(x['Face Encoding']) == 1, axis= 1)] #@@@@ Here because of the Dataset @@@
     if df_save_path:
         save_binary(df, df_save_path) 

@@ -1,0 +1,75 @@
+UX - User Experience - Dimensiona a rela~ao da pessoa com um produto, serviço ou aplicativo
+UI - User Interface - Preocupa-se com a utilidade, usuabilidade e inovação
+
+#Ferramentas utilizadas no dia-a-dia:
+-Design: Onde será construida a prototipagem da aplicação
+Exemplos: Photoshop, Figma, Sketch
+
+-Protótipo: Escolher um que atenda melhor às necessidades de realismo
+Exemplos: InVision, Figma
+
+-Entrega: utilizado para fazer entrega para o time que irá desenvolver de fato a aplicação
+
+-Monitoramento: Após o desenvolvimento algumas ferramentas auxiliam a analisar com por exemplo, mapa de calor
+Exemplos: Hotjar
+
+#Viabilidade, desejabilidade e capacidade
+Um produto ou serviço que possuí estas 3 características tem maior chance de sucesso
+
+-Viabilidade
+A camada viabilidade diz respeito ao que é financeiramente viável e pode ser considerado dentro de modelo de negócio, sustentável
+
+-Desejabilidade
+Não pode ser confundida com a vontade de saciar um desejo, nesta camada avalia-se dores que ele possui, ganhos que ele possa potencializar, ou até tarefas que possam ser automatizadas.
+
+-Capacidade
+Capacidade de uso da tenologia para resolver aquele problema
+
+#Pesquisa
+Estas duas camadas só podem ser atingidas com a utilização de pesquisas para atingir uma empatia com o cliente
+Deve ser feita de forma a não enviesar a resposta do usuário e o entrevistador deve passar a sensação de um ambiente seguro em que o 
+entrevistado possa falar abertamente sobre os questionamentos.
+As perguntas que serão feitas devem partir de alguma premissa que se deseje averiguar.
+Recomenda-se a utilizar perguntas com iniciadas com "Comos e Porquês" pois estimulam o entrevistado a contar um história
+As perguntas não devem conter adjetivos que tendem inferir algo sobre o entrevistado, por exemplo: "Você costuma comer comida saudável?"
+Um contrato de confidenciabilidade ajuda o entrevistado a se abrir mais
+Gravar a etrevista é uma boa prática, desde que o entrevistado concorde, revisar cada entrevista, realçando, 
+
+#Personas e Jobs to be done
+-Personas é para quem se está desenvolvimento, se identificar padrões, uma matriz com o nome e categoria
+Criar uma Persona a partir do que você identificou de padrões.
+Manter contato com a Persona
+
+-Jobs to be done:
+Estamos tentando entender o que a Persona quer fazer, estamos tentando criar soluções para ele.
+Ao conversar com o usuário queremos identificar o contexto da compra
+Crie frases com o seguinte formato: Quando <Contexto> eu quero <Motivação> para que eu possa <Proposta de Valor>
+Exemplo de um job que a Persona possa querer no produto: Quando <estou em uma festa> eu quero <tirar uma foto> para que eu possa <relembrar depois>
+
+#Jornada do usuário
+ornada do usuário é bastante importante para deixar claro para toda a equipe quais são as ações que aquele usuário executa no software, quais são os pontos de contato que ele tem com a sua marca, com o seu produto e quais são os pontos que vocês podem melhorar
+É importante definir o contexto de uso, por exemplo em um aplicativo de fidelidade do supermercado o contexto de uso seria o supemercado e em casa
+Após é importante escolher um contexto de uso e definir os atores daquele contexto, neste caso escolhendo consumidor (e caixa) as ações que ele irá tomar dentro do aplicativo.
+Caso seja dificil determinar as ações tente começar pelo objetivo final
+
+
+############
+# De onde tirar as ideias?
+Existem técnicas de brainstorm que auxiliam na geração de ideias, como definir um ponto de foco, por exemplo aumentar o tempo gasto dentro do simulate
+Uma alternativa ao brainstorm é o crazy 8's que consiste em analisar as propostas dos concorrentes, selecionar as mais interessantes e realizar uma dinâmica de 8 minutos,
+nesse tempo os participantes devem em 8 minutos desenhar 8 variações para a ideia que julgou ser mais interessante. Uma forma de auxiliar é utilizar o MESCRAI
+(Modifique, Elimine, Substitua, Combine, Rearranje, Adapte, Inverta)
+
+# Protótipo
+Pode ser físico ou comulmente na área de tecnologia uma sketch, além de variar entre alta, média e baixa fidelidade
+
+
+
+
+
+
+
+
+
+
+
