@@ -202,11 +202,14 @@ def draw_rectangle(frame, faces_locations, name, alive, full_name=None):
     
 #     cam_gen()
 
+# abspath = "/home/felipe/Documents/Alianca/image-explorer/my_tests"
+abspath = os.path.abspath(os.getcwd()) #certo
 
-model_save_path = "./knn_model.clf"
-train_dir = "archive/lfw-deepfunneled"
-df_save_path = 'bkp/dataset_example.pkl'
-loc_save_screenshot = "capturas/frame.jpg"
+
+model_save_path = abspath + "/bkp/knn_model.clf"
+train_dir = abspath + "/archive/lfw-deepfunneled"
+df_save_path = abspath + "/bkp/dataset_example.pkl"
+loc_save_screenshot = abspath + "/capturas/frame.jpg"
 
 model = fr_api.load_binary(model_save_path)
 

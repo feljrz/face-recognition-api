@@ -80,7 +80,7 @@ def get_label(frame, candidates, tolerance):
 
     return [name], count
 
-def read_dir(directory, for_one=False, n_images=4):
+def read_dir(directory, for_one=False, n_images=5):
     path = []
     images = []
     data = []
@@ -172,16 +172,10 @@ def first_train(train_dir, model_save_path=None, df_save_path=None):
 
 # Realizando leitura do dataset
 # Lembrar de definir esta variáveis via linha de comnado
-model_save_path = "./knn_model.clf"
-train_dir = "archive/lfw-deepfunneled"
-df_save_path = 'bkp/dataset_example.pkl'
-df = pd.read_pickle(df_save_path)  #Lembrar de definir o carregamento facultativo
+# abspath = os.path.abspath(os.getcwd())
+abspath = "/home/felipe/Documents/Alianca/image-explorer/my_tests"
 
-
-
-
-
-
-
-
-
+model_save_path = abspath + "/bkp/knn_model.clf"
+train_dir = abspath + "/archive/lfw-deepfunneled"
+df_save_path = abspath + "/bkp/dataset_example.pkl" #Alterado
+# df = pd.read_pickle(df_save_path)  #Lembrar de definir o carregamento facultativo
