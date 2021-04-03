@@ -202,7 +202,6 @@ def draw_rectangle(frame, faces_locations, name, alive, full_name=None):
     
 #     cam_gen()
 
-# abspath = "/home/felipe/Documents/Alianca/image-explorer/my_tests"
 abspath = os.path.abspath(os.getcwd()) #certo
 
 
